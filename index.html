@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoTracker Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .pulse-green {
+            animation: pulseGreen 2s infinite;
+        }
+        .pulse-red {
+            animation: pulseRed 2s infinite;
+        }
+        @keyframes pulseGreen {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+        }
+        @keyframes pulseRed {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        }
+        .crypto-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .btc-gradient {
+            background: linear-gradient(135deg, #f7931e 0%, #ff6b35 100%);
+        }
+        .eth-gradient {
+            background: linear-gradient(135deg, #627eea 0%, #3c4fe0 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-full font-sans">
+    <div class="min-h-full">
+        <!-- Header -->
+        <header class="bg-gray-800 shadow-2xl border-b border-gray-700">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center py-6">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 crypto-card rounded-full flex items-center justify-center mr-4">
+                            <span class="text-white font-bold text-xl">₿</span>
+                        </div>
+                        <div>
+                            <h1 class="text-3xl font-bold text-white">CryptoTracker Pro</h1>
+                            <p class="text-gray-400 text-sm">© 2024 wajahataleeofficial</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm text-gray-400" id="lastUpdate">Last updated: --</div>
+                        <div class="text-xs text-gray-500 mt-1">Auto-refresh: <span id="countdown">30</span>s</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="bg-gray-800 border-b border-gray-700">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex space-x-8 py-4">
+                    <button onclick="showSection('dashboard')" class="nav-btn px-4 py-2 rounded-lg font-medium transition-colors bg-blue-600 text-white">Dashboard</button>
+                    <button onclick="showSection('analysis')" class="nav-btn px-4 py-2 rounded-lg font-medium transition-colors text-gray-300 hover:text-white hover:bg-gray-700">Analysis</button>
+                    <button onclick="showSection('portfolio')" class="nav-btn px-4 py-2 rounded-lg font-medium transition-colors text-gray-300 hover:text-white hover:bg-gray-700">Portfolio</button>
+                    <button onclick="showSection('alerts')" class="nav-btn px-4 py-2 rounded-lg font-medium transition-colors text-gray-300 hover:text-white hover:bg-gray-700">Alerts</button>
+                </div>
+            </div>
+        </nav>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="section fade-in">
+                <h2 class="text-2xl font-bold text-white mb-6">Market Overview</h2>
+                
+                <!-- Price Cards -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <!-- Bitcoin Card -->
+                    <div class="bg-gray-800 rounded-2xl shadow-2xl p-6 border border-gray-700">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 btc-gradient rounded-full flex items-center justify-center mr-4">
+                                    <span class="text-white font-bold text-lg">₿</span>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-white">Bitcoin</h3>
+                                    <p class="text-gray-400 text-sm">BTC</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-white" id="btcPrice">$--,---</div>
+                                <div class="text-sm" id="btcChange">--%</div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="bg-gray-700 rounded-lg p-3">
+                                <p class="text-gray-400 text-xs">24h High</p>
+                                <p class="text-white font-semibold" id="btcHigh">$--,---</p>
+                            </div>
+                            <div class="bg-gray-700 rounded-lg p-3">
+                                <p class="text-gray-400 text-xs">24h Low</p>
+                                <p class="text-white font-semibold" id="btcLow">$--,---</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-700 rounded-lg p-3">
+                            <p class="text-gray-400 text-xs">Market Cap</p>
+                            <p class="text-white font-semibold" id="btcMarketCap">$---.--B</p>
+                        </div>
+                    </div>
+
+                    <!-- Ethereum Card -->
+                    <div class="bg-gray-800 rounded-2xl shadow-2xl p-6 border border-gray-700">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 eth-gradient rounded-full flex items-center justify-center mr-4">
+                                    <span class="text-white font-bold text-lg">Ξ</span>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-white">Ethereum</h3>
+                                    <p class="text-gray-400 text-sm">ETH</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-white" id="ethPrice">$--,---</div>
+                                <div class="text-sm" id="ethChange">--%</div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="bg-gray-700 rounded-lg p-3">
+                                <p class="text-gray-400 text-xs">24h High</p>
+                                <p class="text-white font-semibold" id="ethHigh">$--,---</p>
+                            </div>
+                            <div class="bg-gray-700 rounded-lg p-3">
+                                <p class="text-gray-400 text-xs">24h Low</p>
+                                <p class="text-white font-semibold" id="ethLow">$--,---</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-700 rounded-lg p-3">
+                            <p class="text-gray-400 text-xs">Market Cap</p>
+                            <p class="text-white font-semibold" id="ethMarketCap">$---.--B</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="bg-gray-800 rounded-2xl shadow-2xl p-6 border border-gray-700">
+                        <h3 class="text-lg font-semibold text-white mb-4">Bitcoin Price Chart (24h)</h3>
+                        <canvas id="btcChart" width="400" height="200"></canvas>
+                    </div>
+                    
+                    <div class="bg-gray-800 rounded-2xl shadow-2xl p-6 border border-gray-700">
+                        <h3 class="text-lg font-semibold text-white mb-4">Ethereum Price Chart (24h)</h3>
+                        <canvas id="ethChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis Section -->
+            <div id="analysis" class="section hidden">
+                <h2 class="text-2xl font-bold text-white mb-6">Technical Analysis</h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Market Sentiment -->
+                    <div class="bg-gray-800 rounded-2xl shadow-2xl p-6 border border-gray-700">
+                        <h3 class="text-lg font-semibold text-white mb-4">Market Sentiment</h3>
+                        <div class="text-center">
+                            <div class="w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-4" id="sentimentCircle">
+                                <span class="text-2xl font-bold" id="sentimentScore">75</span>
+                            </div>
+                            <p class="text-gray-400 text-sm" id="sentimentLabel">Greed</p>
+                            <p class="text-xs text-gray-500 mt-2">Fear & Greed Index</p>
+                        </div>
+                    </div>
+
+                    <!-- Bitcoin Analysis -->
+                    <div class="bg-gray-800 rounded-2xl shadow-2xl p-6 border border-gray-700">
+                        <h3 class="text-lg font-semibold text-white mb-4">Bitcoin Signals</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                                <span class="text-gray-300">RSI (14)</span>
+                                <span class="text-yellow-400 font-semibold" id="btcRSI">65.2</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                                <span class="text-gray-300">Support</span>
+                                <span class="text-green-400 font-semibold" id="btcSupport">$42,500</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                                <span class="text-gray-300">Resistance</span>
+                                <span class="text-red-400 font-semibold" id="btcResistance">$45,800</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                                <span class="text-gray-300">Signal</span>
+                                <span class="text-green-400 font-semibold" id="btcSignal">BULLISH</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ethereum Analysis -->
+                    <div class="bg-gray-800 rounded-2xl shadow-2xl p-6 border border-gray-700">
+                        <h3 class="text-lg font-semibold text-white mb-4">Ethereum Signals</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                                <span class="text-gray-300">RSI (14)</span>
+                                <span class="text-yellow-400 font-semibold" id="ethRSI">58.7</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                                <span class="text-gray-300">Support</span>
+                                <span class="text-green-400 font-semibold" id="ethSupport">$2,450</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                                <span class="text-gray-300">Resistance</span>
+                                <span class="text-red-400 font-semibold" id="ethResistance">$2,680</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                                <span class="text-gray-300">Signal</span>
+                                <span class="text-green-400 font-semibold" id="ethSignal">BULLISH</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Market News -->
+                <div class="mt-8 bg-gray-800 rounded-2xl shadow-2xl p-6 border border-gray-700">
+                    <h3 class="text-lg font-semibold text-white mb-4">Market Insights</h3>
+                    <div class="space-y-4" id="marketNews">
+                        <div class="p-4 bg-gray-700 rounded-lg border-l-4 border-green-500">
+                            <h4 class="font-semibold text-white mb-2">Bitcoin Shows Strong Support</h4>
+                            <p class="text-gray-300 text-sm">Technical indicators suggest BTC is holding above key support levels with increasing volume.</p>
+                            <p class="text-gray-500 text-xs mt-2">2 hours ago</p>
+                        </div>
+                        <div class="p-4 bg-gray-700 rounded-lg border-l-4 border-blue-500">
+                            <h4 class="font-semibold text-white mb-2">Ethereum Network Activity Rising</h4>
+                            <p class="text-gray-300 text-sm">On-chain metrics show increased transaction volume and network utilization.</p>
+                            <p class="text-gray-500 text-xs mt-2">4 hours ago</p>
+                        </div>
+                        <div class="p-4 bg-gray-700 rounded-lg border-l-4 border-yellow-500">
+                            <h4 class="font-semibold text-white mb-2">Market Volatility Expected</h4>
+                            <p class="text-gray-300 text-sm">Traders should prepare for potential price swings as market sentiment shifts.</p>
+                            <p class="text-gray-500 text-xs mt-2">6 hours ago</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Portfolio Section -->
+            <div id="portfolio" class="section hidden">
+                <h2 class="text-2xl font-bold text-white mb-6">Portfolio Tracker</h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Add Holdings -->
+                    <div class="bg-gray-800 rounded-2xl shadow-2xl p-6 border border-gray-700">
+                        <h3 class="text-lg font-semibold text-white mb-4">Add Holdings</h3>
+                        <form onsubmit="addHolding(event)" class="space-y-4">
+                            <div>
+                                <label for="cryptoSelect" class="block text-sm font-medium text-gray-300 mb-2">Cryptocurrency</label>
+                                <select id="cryptoSelect" name="cryptoSelect" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500" required>
+                                    <option value="">Select crypto</option>
+                                    <option value="BTC">Bitcoin (BTC)</option>
+                                    <option value="ETH">Ethereum (ETH)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="amount" class="block text-sm font-medium text-gray-300 mb-2">Amount</label>
+                                <input type="number" id="amount" name="amount" step="0.00000001" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500" placeholder="0.1" required>
+                            </div>
+                            <div>
+                                <label for="buyPrice" class="block text-sm font-medium text-gray-300 mb-2">Buy Price ($)</label>
+                                <input type="number" id="buyPrice" name="buyPrice" step="0.01" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500" placeholder="43000" required>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium">Add to Portfolio</button>
+                        </form>
+                    </div>
+
+                    <!-- Portfolio Summary -->
+                    <div class="bg-gray-800 rounded-2xl shadow-2xl p-6 border border-gray-700">
+                        <h3 class="text-lg font-semibold text-white mb-4">Portfolio Summary</h3>
+                        <div class="space-y-4">
+                            <div class="p-4 bg-gray-700 rounded-lg">
+                                <p class="text-gray-400 text-sm">Total Value</p>
+                                <p class="text-2xl font-bold text-white" id="totalValue">$0.00</p>
+                            </div>
+                            <div class="p-4 bg-gray-700 rounded-lg">
+                                <p class="text-gray-400 text-sm">Total P&L</p>
+                                <p class="text-xl font-bold" id="totalPnL">$0.00 (0.00%)</p>
+                            </div>
+                            <div class="p-4 bg-gray-700 rounded-lg">
+                                <p class="text-gray-400 text-sm">Best Performer</p>
+                                <p class="text-white font-semibold" id="bestPerformer">--</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Holdings List -->
+                    <div class="bg-gray-800 rounded-2xl shadow-2xl p-6 border border-gray-700">
+                        <h3 class="text-lg font-semibold text-white mb-4">Your Holdings</h3>
+                        <div id="holdingsList" class="space-y-3">
+                            <p class="text-gray-400 text-center py-8">No holdings yet. Add some crypto to get started!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alerts Section -->
+            <div id="alerts" class="section hidden">
+                <h2 class="text-2xl font-bold text-white mb-6">Price Alerts</h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Create Alert -->
+                    <div class="bg-gray-800 rounded-2xl shadow-2xl p-6 border border-gray-700">
+                        <h3 class="text-lg font-semibold text-white mb-4">Create Price Alert</h3>
+                        <form onsubmit="createAlert(event)" class="space-y-4">
+                            <div>
+                                <label for="alertCrypto" class="block text-sm font-medium text-gray-300 mb-2">Cryptocurrency</label>
+                                <select id="alertCrypto" name="alertCrypto" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500" required>
+                                    <option value="">Select crypto</option>
+                                    <option value="BTC">Bitcoin (BTC)</option>
+                                    <option value="ETH">Ethereum (ETH)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="alertType" class="block text-sm font-medium text-gray-300 mb-2">Alert Type</label>
+                                <select id="alertType" name="alertType" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500" required>
+                                    <option value="">Select type</option>
+                                    <option value="above">Price Above</option>
+                                    <option value="below">Price Below</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="alertPrice" class="block text-sm font-medium text-gray-300 mb-2">Target Price ($)</label>
+                                <input type="number" id="alertPrice" name="alertPrice" step="0.01" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500" placeholder="45000" required>
+                            </div>
+                            <button type="submit" class="w-full bg-yellow-600 text-white py-2 px-4 rounded-lg hover:bg-yellow-700 transition-colors font-medium">Create Alert</button>
+                        </form>
+                    </div>
+
+                    <!-- Active Alerts -->
+                    <div class="bg-gray-800 rounded-2xl shadow-2xl p-6 border border-gray-700">
+                        <h3 class="text-lg font-semibold text-white mb-4">Active Alerts</h3>
+                        <div id="alertsList" class="space-y-3">
+                            <p class="text-gray-400 text-center py-8">No active alerts. Create one to get notified!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alert History -->
+                <div class="mt-8 bg-gray-800 rounded-2xl shadow-2xl p-6 border border-gray-700">
+                    <h3 class="text-lg font-semibold text-white mb-4">Recent Notifications</h3>
+                    <div id="alertHistory" class="space-y-3">
+                        <p class="text-gray-400 text-center py-8">No notifications yet.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Global variables
+        let cryptoData = {
+            BTC: { price: 0, change: 0, high: 0, low: 0, marketCap: 0 },
+            ETH: { price: 0, change: 0, high: 0, low: 0, marketCap: 0 }
+        };
+        
+        let portfolio = [];
+        let alerts = [];
+        let priceHistory = { BTC: [], ETH: [] };
+        let btcChart, ethChart;
+        let updateInterval;
+        let countdownInterval;
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            initializeCharts();
+            fetchCryptoData();
+            startAutoUpdate();
+            updateSentiment();
+        });
+
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName).classList.remove('hidden');
+            document.getElementById(sectionName).classList.add('fade-in');
+            
+            // Update navigation
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('text-gray-300');
+            });
+            
+            event.target.classList.add('bg-blue-600', 'text-white');
+            event.target.classList.remove('text-gray-300');
+        }
+
+        function fetchCryptoData() {
+            // Simulate live crypto data (in real app, this would fetch from API)
+            const btcBasePrice = 43500 + Math.random() * 2000;
+            const ethBasePrice = 2600 + Math.random() * 200;
+            
+            cryptoData.BTC = {
+                price: btcBasePrice,
+                change: (Math.random() - 0.5) * 10,
+                high: btcBasePrice + Math.random() * 500,
+                low: btcBasePrice - Math.random() * 500,
+                marketCap: btcBasePrice * 19.5 / 1000000000
+            };
+            
+            cryptoData.ETH = {
+                price: ethBasePrice,
+                change: (Math.random() - 0.5) * 8,
+                high: ethBasePrice + Math.random() * 100,
+                low: ethBasePrice - Math.random() * 100,
+                marketCap: ethBasePrice * 120 / 1000000000
+            };
+            
+            updatePriceDisplay();
+            updateCharts();
+            checkAlerts();
+            updatePortfolio();
+            updateAnalysis();
+            
+            document.getElementById('lastUpdate').textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+        }
+
+        function updatePriceDisplay() {
+            // Bitcoin
+            document.getElementById('btcPrice').textContent = `$${cryptoData.BTC.price.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+            document.getElementById('btcHigh').textContent = `$${cryptoData.BTC.high.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+            document.getElementById('btcLow').textContent = `$${cryptoData.BTC.low.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+            document.getElementById('btcMarketCap').textContent = `$${cryptoData.BTC.marketCap.toFixed(1)}B`;
+            
+            const btcChangeEl = document.getElementById('btcChange');
+            btcChangeEl.textContent = `${cryptoData.BTC.change >= 0 ? '+' : ''}${cryptoData.BTC.change.toFixed(2)}%`;
+            btcChangeEl.className = cryptoData.BTC.change >= 0 ? 'text-green-400' : 'text-red-400';
+            
+            // Ethereum
+            document.getElementById('ethPrice').textContent = `$${cryptoData.ETH.price.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+            document.getElementById('ethHigh').textContent = `$${cryptoData.ETH.high.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+            document.getElementById('ethLow').textContent = `$${cryptoData.ETH.low.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+            document.getElementById('ethMarketCap').textContent = `$${cryptoData.ETH.marketCap.toFixed(1)}B`;
+            
+            const ethChangeEl = document.getElementById('ethChange');
+            ethChangeEl.textContent = `${cryptoData.ETH.change >= 0 ? '+' : ''}${cryptoData.ETH.change.toFixed(2)}%`;
+            ethChangeEl.className = cryptoData.ETH.change >= 0 ? 'text-green-400' : 'text-red-400';
+        }
+
+        function initializeCharts() {
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: { 
+                        display: false,
+                        grid: { display: false }
+                    },
+                    y: { 
+                        display: false,
+                        grid: { display: false }
+                    }
+                },
+                elements: {
+                    point: { radius: 0 },
+                    line: { tension: 0.4 }
+                }
+            };
+
+            // Bitcoin Chart
+            const btcCtx = document.getElementById('btcChart').getContext('2d');
+            btcChart = new Chart(btcCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        borderColor: '#f7931e',
+                        backgroundColor: 'rgba(247, 147, 30, 0.1)',
+                        fill: true,
+                        borderWidth: 2
+                    }]
+                },
+                options: chartOptions
+            });
+
+            // Ethereum Chart
+            const ethCtx = document.getElementById('ethChart').getContext('2d');
+            ethChart = new Chart(ethCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        borderColor: '#627eea',
+                        backgroundColor: 'rgba(98, 126, 234, 0.1)',
+                        fill: true,
+                        borderWidth: 2
+                    }]
+                },
+                options: chartOptions
+            });
+        }
+
+        function updateCharts() {
+            const now = new Date();
+            const timeLabel = now.toLocaleTimeString('en-US', { hour12: false });
+            
+            // Update price history
+            priceHistory.BTC.push(cryptoData.BTC.price);
+            priceHistory.ETH.push(cryptoData.ETH.price);
+            
+            // Keep only last 20 data points
+            if (priceHistory.BTC.length > 20) {
+                priceHistory.BTC.shift();
+                priceHistory.ETH.shift();
+            }
+            
+            // Update Bitcoin chart
+            btcChart.data.labels.push(timeLabel);
+            btcChart.data.datasets[0].data.push(cryptoData.BTC.price);
+            
+            if (btcChart.data.labels.length > 20) {
+                btcChart.data.labels.shift();
+                btcChart.data.datasets[0].data.shift();
+            }
+            
+            btcChart.update('none');
+            
+            // Update Ethereum chart
+            ethChart.data.labels.push(timeLabel);
+            ethChart.data.datasets[0].data.push(cryptoData.ETH.price);
+            
+            if (ethChart.data.labels.length > 20) {
+                ethChart.data.labels.shift();
+                ethChart.data.datasets[0].data.shift();
+            }
+            
+            ethChart.update('none');
+        }
+
+        function updateAnalysis() {
+            // Update technical indicators (simulated)
+            document.getElementById('btcRSI').textContent = (50 + Math.random() * 30).toFixed(1);
+            document.getElementById('btcSupport').textContent = `$${(cryptoData.BTC.price * 0.95).toFixed(0)}`;
+            document.getElementById('btcResistance').textContent = `$${(cryptoData.BTC.price * 1.05).toFixed(0)}`;
+            document.getElementById('btcSignal').textContent = cryptoData.BTC.change > 0 ? 'BULLISH' : 'BEARISH';
+            document.getElementById('btcSignal').className = cryptoData.BTC.change > 0 ? 'text-green-400 font-semibold' : 'text-red-400 font-semibold';
+            
+            document.getElementById('ethRSI').textContent = (50 + Math.random() * 30).toFixed(1);
+            document.getElementById('ethSupport').textContent = `$${(cryptoData.ETH.price * 0.95).toFixed(0)}`;
+            document.getElementById('ethResistance').textContent = `$${(cryptoData.ETH.price * 1.05).toFixed(0)}`;
+            document.getElementById('ethSignal').textContent = cryptoData.ETH.change > 0 ? 'BULLISH' : 'BEARISH';
+            document.getElementById('ethSignal').className = cryptoData.ETH.change > 0 ? 'text-green-400 font-semibold' : 'text-red-400 font-semibold';
+        }
+
+        function updateSentiment() {
+            const sentiment = Math.floor(Math.random() * 100);
+            document.getElementById('sentimentScore').textContent = sentiment;
+            
+            const circle = document.getElementById('sentimentCircle');
+            const label = document.getElementById('sentimentLabel');
+            
+            if (sentiment < 25) {
+                circle.className = 'w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-4 bg-red-600';
+                label.textContent = 'Extreme Fear';
+            } else if (sentiment < 45) {
+                circle.className = 'w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-4 bg-orange-500';
+                label.textContent = 'Fear';
+            } else if (sentiment < 55) {
+                circle.className = 'w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-4 bg-yellow-500';
+                label.textContent = 'Neutral';
+            } else if (sentiment < 75) {
+                circle.className = 'w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-4 bg-green-500';
+                label.textContent = 'Greed';
+            } else {
+                circle.className = 'w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-4 bg-green-600';
+                label.textContent = 'Extreme Greed';
+            }
+        }
+
+        function addHolding(event) {
+            event.preventDefault();
+            const form = event.target;
+            
+            const holding = {
+                id: Date.now(),
+                crypto: form.cryptoSelect.value,
+                amount: parseFloat(form.amount.value),
+                buyPrice: parseFloat(form.buyPrice.value),
+                timestamp: new Date().toLocaleString()
+            };
+            
+            portfolio.push(holding);
+            form.reset();
+            updatePortfolio();
+            saveData();
+            
+            showNotification(`Added ${holding.amount} ${holding.crypto} to portfolio!`, 'success');
+        }
+
+        function updatePortfolio() {
+            const holdingsList = document.getElementById('holdingsList');
+            
+            if (portfolio.length === 0) {
+                holdingsList.innerHTML = '<p class="text-gray-400 text-center py-8">No holdings yet. Add some crypto to get started!</p>';
+                document.getElementById('totalValue').textContent = '$0.00';
+                document.getElementById('totalPnL').textContent = '$0.00 (0.00%)';
+                document.getElementById('bestPerformer').textContent = '--';
+                return;
+            }
+            
+            let totalValue = 0;
+            let totalCost = 0;
+            let bestPerformer = { crypto: '', pnl: -Infinity };
+            
+            holdingsList.innerHTML = portfolio.map(holding => {
+                const currentPrice = cryptoData[holding.crypto].price;
+                const currentValue = holding.amount * currentPrice;
+                const cost = holding.amount * holding.buyPrice;
+                const pnl = currentValue - cost;
+                const pnlPercent = (pnl / cost) * 100;
+                
+                totalValue += currentValue;
+                totalCost += cost;
+                
+                if (pnlPercent > bestPerformer.pnl) {
+                    bestPerformer = { crypto: holding.crypto, pnl: pnlPercent };
+                }
+                
+                return `
+                    <div class="p-3 bg-gray-700 rounded-lg">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-semibold text-white">${holding.amount} ${holding.crypto}</span>
+                            <button onclick="removeHolding(${holding.id})" class="text-red-400 hover:text-red-300 text-sm">Remove</button>
+                        </div>
+                        <div class="text-sm text-gray-300">
+                            <div class="flex justify-between">
+                                <span>Value:</span>
+                                <span>$${currentValue.toFixed(2)}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>P&L:</span>
+                                <span class="${pnl >= 0 ? 'text-green-400' : 'text-red-400'}">
+                                    ${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)} (${pnlPercent.toFixed(2)}%)
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            const totalPnL = totalValue - totalCost;
+            const totalPnLPercent = totalCost > 0 ? (totalPnL / totalCost) * 100 : 0;
+            
+            document.getElementById('totalValue').textContent = `$${totalValue.toFixed(2)}`;
+            document.getElementById('totalPnL').textContent = `${totalPnL >= 0 ? '+' : ''}$${totalPnL.toFixed(2)} (${totalPnLPercent.toFixed(2)}%)`;
+            document.getElementById('totalPnL').className = `text-xl font-bold ${totalPnL >= 0 ? 'text-green-400' : 'text-red-400'}`;
+            document.getElementById('bestPerformer').textContent = bestPerformer.crypto ? `${bestPerformer.crypto} (+${bestPerformer.pnl.toFixed(2)}%)` : '--';
+        }
+
+        function removeHolding(id) {
+            portfolio = portfolio.filter(holding => holding.id !== id);
+            updatePortfolio();
+            saveData();
+            showNotification('Holding removed from portfolio', 'success');
+        }
+
+        function createAlert(event) {
+            event.preventDefault();
+            const form = event.target;
+            
+            const alert = {
+                id: Date.now(),
+                crypto: form.alertCrypto.value,
+                type: form.alertType.value,
+                price: parseFloat(form.alertPrice.value),
+                timestamp: new Date().toLocaleString(),
+                triggered: false
+            };
+            
+            alerts.push(alert);
+            form.reset();
+            updateAlertsList();
+            saveData();
+            
+            showNotification(`Alert created for ${alert.crypto}!`, 'success');
+        }
+
+        function updateAlertsList() {
+            const alertsList = document.getElementById('alertsList');
+            const activeAlerts = alerts.filter(alert => !alert.triggered);
+            
+            if (activeAlerts.length === 0) {
+                alertsList.innerHTML = '<p class="text-gray-400 text-center py-8">No active alerts. Create one to get notified!</p>';
+                return;
+            }
+            
+            alertsList.innerHTML = activeAlerts.map(alert => `
+                <div class="p-3 bg-gray-700 rounded-lg">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-semibold text-white">${alert.crypto} ${alert.type} $${alert.price}</span>
+                        <button onclick="removeAlert(${alert.id})" class="text-red-400 hover:text-red-300 text-sm">Remove</button>
+                    </div>
+                    <div class="text-xs text-gray-400">Created: ${alert.timestamp}</div>
+                </div>
+            `).join('');
+        }
+
+        function removeAlert(id) {
+            alerts = alerts.filter(alert => alert.id !== id);
+            updateAlertsList();
+            saveData();
+            showNotification('Alert removed', 'success');
+        }
+
+        function checkAlerts() {
+            alerts.forEach(alert => {
+                if (alert.triggered) return;
+                
+                const currentPrice = cryptoData[alert.crypto].price;
+                let triggered = false;
+                
+                if (alert.type === 'above' && currentPrice >= alert.price) {
+                    triggered = true;
+                } else if (alert.type === 'below' && currentPrice <= alert.price) {
+                    triggered = true;
+                }
+                
+                if (triggered) {
+                    alert.triggered = true;
+                    triggerAlert(alert, currentPrice);
+                }
+            });
+        }
+
+        function triggerAlert(alert, currentPrice) {
+            const message = `${alert.crypto} is now ${alert.type} $${alert.price}! Current price: $${currentPrice.toFixed(2)}`;
+            showNotification(message, 'success');
+            
+            // Add to alert history
+            const alertHistory = document.getElementById('alertHistory');
+            const historyItem = document.createElement('div');
+            historyItem.className = 'p-3 bg-gray-700 rounded-lg border-l-4 border-yellow-500';
+            historyItem.innerHTML = `
+                <div class="font-semibold text-white">${message}</div>
+                <div class="text-xs text-gray-400 mt-1">${new Date().toLocaleString()}</div>
+            `;
+            
+            if (alertHistory.querySelector('p')) {
+                alertHistory.innerHTML = '';
+            }
+            alertHistory.insertBefore(historyItem, alertHistory.firstChild);
+            
+            updateAlertsList();
+            saveData();
+        }
+
+        function startAutoUpdate() {
+            let countdown = 30;
+            
+            updateInterval = setInterval(() => {
+                fetchCryptoData();
+                countdown = 30;
+            }, 30000);
+            
+            countdownInterval = setInterval(() => {
+                countdown--;
+                document.getElementById('countdown').textContent = countdown;
+                if (countdown <= 0) countdown = 30;
+            }, 1000);
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white font-medium z-50 ${
+                type === 'success' ? 'bg-green-600' : 'bg-red-600'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 4000);
+        }
+
+        function saveData() {
+            const data = {
+                portfolio,
+                alerts,
+                priceHistory
+            };
+            localStorage.setItem('cryptoTrackerData', JSON.stringify(data));
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('cryptoTrackerData');
+            if (saved) {
+                const data = JSON.parse(saved);
+                portfolio = data.portfolio || [];
+                alerts = data.alerts || [];
+                priceHistory = data.priceHistory || { BTC: [], ETH: [] };
+                
+                updatePortfolio();
+                updateAlertsList();
+            }
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9948e3a423abce82',t:'MTc2MTQ3MDU0Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
